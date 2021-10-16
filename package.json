@@ -1,7 +1,8 @@
 {
   "name": "da-archiver",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Archive any DeviantArt user/group galleries and favourites locally.",
+  "homepage": "https://github.com/crazy4groovy/da-archiver#readme",
   "main": "./src/index.js",
   "bin": {
     "da-archiver": "./src/index.js"
