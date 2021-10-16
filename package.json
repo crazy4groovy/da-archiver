@@ -1,0 +1,36 @@
+{
+  "name": "da-archiver",
+  "version": "0.9.0",
+  "description": "Archive any DeviantArt user/group galleries and favourites locally.",
+  "main": "./src/index.js",
+  "bin": {
+    "da-archiver": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "tools:ubg": "node ./src/tools/update-best-galleries.js",
+    "tools:dp": "node ./src/tools/discover-popular.js",
+    "tools:sa": "node ./src/tools/sample-art.js",
+    "test": "echo \"Error: no automated tests -- TISK TISK!\" && exit 1"
+  },
+  "engines": {
+    "node": ">=14.x"
+  },
+  "keywords": [
+    "deviantart"
+  ],
+  "author": "crazy4groovy",
+  "license": "MIT",
+  "dependencies": {
+    "abort-controller": "~3.0.0",
+    "commander": "~7.2.0",
+    "debug": "~4.3.2",
+    "folder-walker": "~3.2.0",
+    "lodash.get": "~4.4.2",
+    "node-fetch": "^2.6.5",
+    "please-upgrade-node": "~3.2.0",
+    "recursive-readdir": "~2.2.2",
+    "supports-color": "~8.1.1",
+    "xml2json": "~0.12.0"
+  }
+}
