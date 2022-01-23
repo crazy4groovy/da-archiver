@@ -28,7 +28,7 @@
     "debug": "~4.3.2",
     "folder-walker": "~3.2.0",
     "lodash.get": "~4.4.2",
-    "node-fetch": "^2.6.5",
+    "node-fetch": "^3.1.1",
     "please-upgrade-node": "~3.2.0",
     "recursive-readdir": "~2.2.2",
     "supports-color": "~8.1.1",
