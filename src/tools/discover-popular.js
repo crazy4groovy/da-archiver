@@ -11,7 +11,7 @@ const { join, relative, parse } = require("path");
 const fetch = require("node-fetch");
 const walker = require("folder-walker");
 
-const throttler = require("../throttler");
+const throttler = require("../throttler")(1);
 
 const isDirectory = (folder) =>
   existsSync(folder) && lstatSync(folder).isDirectory();
@@ -29,27 +29,27 @@ const appendOpts = {
   mode: 0o666,
 };
 
-function isPopular(stats) {
+function enrichStats(stats) {
   if (stats.reject) {
     return false;
   }
   let pop =
-    stats.deviations + stats.favourites > 1999 &&
-    stats.watchers > 5999 &&
-    stats.watching > 99;
+    stats.deviations > 999 && stats.watchers > 5999 && stats.watching > 49;
   pop = pop || (stats.watchers > 9999 && stats.pageviews > 199999);
-  return pop;
+  stats.isPopular = pop;
+  const fav = stats.favourites > 1999;
+  stats.isFavouritesWatcher = fav;
 }
 
-async function stats(author) {
+async function fetchStats(author) {
   const url = `https://www.deviantart.com/_napi/da-user-profile/api/init/favourites?username=${author}&deviations_limit=24&with_subfolders=true`;
   const response = await fetch(url, { timeout: 6000 })
     .then((r) => r.json())
     .catch(() => ({ pageData: { stats: {} } }));
 
   const { stats } = response.pageData;
-  stats.isPopular = isPopular(stats);
-  return stats;
+
+  enrichStats(stats); // <<<<<<<<<<<<<<<<<
 }
 
 (async () => {
@@ -80,17 +80,19 @@ async function stats(author) {
       if (name && !foundUsernames[name]) {
         foundUsernames[name] = true;
 
-        data = JSON.parse(data || '{"reject":true}');
-        const wasPopular = data.isPopular;
-        delete data.isPopular;
-        data.isPopular = isPopular(data);
-        data.isPopular &&
+        const stats = JSON.parse(data || '{"reject":true}');
+        const wasPopular = stats.isPopular;
+        delete stats.isPopular;
+
+        enrichStats(stats); // <<<<<<<<<<<<<<<<<
+
+        stats.isPopular &&
           !wasPopular &&
-          console.log(author, data.isPopular, wasPopular);
+          console.log(author, stats.isPopular, wasPopular);
 
         const line =
-          (data.isPopular ? "" : "\t") +
-          `${name} ${JSON.stringify(data)}` +
+          (stats.isPopular ? "" : "\t") +
+          `${name} ${JSON.stringify(stats)}` +
           "\n";
         writeFileSync(discoverFile, line, appendOpts);
       }
@@ -123,10 +125,12 @@ async function stats(author) {
     if (name && !foundUsernames[name]) {
       foundUsernames[name] = true;
       //console.log(name, f.basename || f);
-      const data = await throttler(stats, name);
-      data.isPopular && console.log(name, data.isPopular);
+      const data = await throttler(fetchStats, name);
+
+      const keeper = data.isPopular || data.isFavouritesWatcher;
+      keeper && console.log(name, data.isPopular, data.isFavouritesWatcher);
       const writeLine =
-        (data.isPopular ? "" : "\t") + `${name} ${JSON.stringify(data)}` + "\n";
+        (keeper ? "" : "\t") + `${name} ${JSON.stringify(data)}` + "\n";
       writeFileSync(discoverFile, writeLine, appendOpts);
     }
   }

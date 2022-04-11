@@ -4,7 +4,7 @@ const { join, relative } = require("path");
 const fetch = require("node-fetch");
 
 const { parseRssXml } = require("../gallery");
-const throttler = require("../throttler");
+const throttler = require("../throttler")(3);
 
 let [, , baseFolder, discoverArchiveFile] = process.argv;
 if (!baseFolder) throw new Error("Required baseFolder missing");
@@ -23,8 +23,8 @@ const usernames = readFileSync(discoverArchiveFile, "utf8")
 
 console.log(usernames.sort().join("\n"), "\n", usernames.length);
 
-const handleUsername = async (username) => {
-  const destFilename = join(baseFolder, username + ".jpg");
+const handleUsername =  async (username, imgIdx) => {
+  const destFilename = join(baseFolder, username + "_" + imgIdx + ".jpg");
   // console.log(baseFolder, username, destFilename, imgs[0].imgUrl);
   if (existsSync(destFilename)) {
     console.log("IMAGE EXISTS:", username);
@@ -35,12 +35,12 @@ const handleUsername = async (username) => {
   const xml = await fetch(url, { timeout: 6000 }).then((r) => r.text());
   const { imgs } = parseRssXml(xml);
 
-  if (!imgs.length) {
-    console.log("NO IMAGES:", username);
+  if (!imgs.length || !imgs[imgIdx]) {
+    console.log("NO IMAGES:", username, imgs.length);
     return;
   }
 
-  await fetch(imgs[0].imgUrl)
+  await fetch(imgs[imgIdx].imgUrl)
     .then((res) => {
       const destWriteStream = createWriteStream(destFilename);
       res.body.pipe(destWriteStream);
@@ -50,4 +50,5 @@ const handleUsername = async (username) => {
     });
 };
 
-usernames.forEach((username) => throttler(handleUsername, username));
+const imgIdx = 0; // which image index to download from list?
+usernames.forEach((username) => throttler(handleUsername, username, imgIdx));

@@ -41,9 +41,18 @@ Eg:
 
 ## Debug logs
 
-This package uses [debug](https://www.npmjs.com/package/debug). You can set the ENV variable `DEBUG=*` for verbose tracing logs.
+This package uses [debug](https://www.npmjs.com/package/debug).
 
-Eg. [PowerShell](https://www.npmjs.com/package/debug#powershell-vs-code-default):
+- `main`
+- `downloader`
+- `favs:http`
+- `fav:http`
+- `fav:process`
+- `gallery`
+- `group`
+- `*` for all debug loggers
+
+Eg. [PowerShell env](https://www.npmjs.com/package/debug#powershell-vs-code-default):
 
 `$env:DEBUG='*';da-archiver ...`
 `$env:DEBUG='downloader';da-archiver ...`
@@ -54,19 +63,19 @@ If you `git clone` this repo, there are a few helper tools for "bonus discovery"
 
 >Note: argument order *matters*, all required!!
 
-These scripts can be run like such, for example:
+These scripts can be run like such, for example (in Powershell):
 
 >`npm run tools:ubg -- {root_folder} {best_users.md}`
 
 - Updates the galleries of your "best"/top users by tracking them in a formatted markdown *list*:
-`$env:DEBUG='downloader';node ./src/tools/update-best-galleries.js {root_folder} {best_users.md}`
+`$env:DEBUG='downloader';node .\src\tools\update-best-galleries.js {root_folder} {best_users.md}`
 
 >`npm run tools:dp -- {root_folder} {discover_archive_file.txt}`
 
 - Scrapes your existing users' favourites, to see which ones are "popular" on DeviantArt, and store user list in a file:
-`$env:DEBUG='downloader';node ./src/tools/discover-popular.js {root_folder} {discover_archive_file.txt}`
+`$env:DEBUG='downloader';node .\src\tools\discover-popular.js {root_folder} {discover_archive_file.txt}`
 
 >`npm run tools:sa -- {root_folder} {discover_archive_file.txt}`
 
 - Downloads one sample image from each users' gallery which is listed in this text file (i.e. to get a feel for their art style):
-`$env:DEBUG='downloader';node ./src/tools/sample-art.js {root_folder} {discover_archive_file.txt}`
+`$env:DEBUG='downloader';node .\src\tools\sample-art.js {root_folder} {discover_archive_file.txt}`
