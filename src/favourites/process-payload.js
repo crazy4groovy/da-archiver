@@ -15,6 +15,7 @@ function _findBestTypeUrl(types, prettyName) {
 
   let typeUrl = _get(foundTypes[0], "c", "");
   if (typeUrl) typeUrl = "/" + typeUrl.replace("<prettyName>", prettyName);
+  typeUrl = typeUrl.replace(new RegExp('//', 'g'), '/')
 
   return typeUrl;
 }
@@ -22,7 +23,7 @@ function _findBestTypeUrl(types, prettyName) {
 module.exports = async (author, json, folder = ".") => {
   if (!Array.isArray(json)) json = [json];
 
-  const dynVal = (i) => {
+  const dynSrc = (i) => {
     if (!author) {
       return `${i.deviation.author.username}`;
     }
@@ -36,13 +37,15 @@ module.exports = async (author, json, folder = ".") => {
     const typeUrl = _findBestTypeUrl(types, prettyName);
     const uri = _get(i, "deviation.media.baseUri");
     const f = `${uri}${typeUrl}?token=${token}`;
+    debug("final img src:", f);
+
     return f;
   };
 
   const s = new Set();
   json.forEach((d) =>
     d.results.forEach((i) => {
-      s.add(dynVal(i));
+      s.add(dynSrc(i));
     })
   );
   const payload = [...s]
