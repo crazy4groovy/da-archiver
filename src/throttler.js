@@ -12,6 +12,7 @@ const newThrottler = ({ isBusy, doLock, doUnlock, waitMs }) =>
   };
 
 const _lock = { count: 0, max: 1 };
+
 const throttler = newThrottler({
   isBusy: () => _lock.count >= _lock.max,
   doLock: () => (_lock.count += 1),
@@ -20,6 +21,6 @@ const throttler = newThrottler({
 });
 
 module.exports = (max) => {
-  if (max != undefined && !Number.isNaN(max)) _lock.max = max;
+  if (max !== undefined && !Number.isNaN(max)) _lock.max = max;
   return throttler;
 }

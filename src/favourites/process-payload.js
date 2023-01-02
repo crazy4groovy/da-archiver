@@ -6,10 +6,10 @@ const _get = require("lodash.get");
 
 const { reducer: dlReducer } = require("../download");
 
-const validtypes = ["fullview", "preview", "400T", "350T", "300W"];
+const validTypes = ["fullview", "preview", "400T", "350T", "300W"];
 
 function _findBestTypeUrl(types, prettyName) {
-  const foundTypes = validtypes
+  const foundTypes = validTypes
     .map((vt) => types.find((t) => t.t === vt && t.c))
     .filter(Boolean);
 

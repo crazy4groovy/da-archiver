@@ -4,7 +4,7 @@ const { join, relative } = require("path");
 const fetch = require("node-fetch");
 
 const { parseRssXml } = require("../gallery");
-const throttler = require("../throttler")(3);
+const throttler = require("../throttler")(1);
 
 let [, , baseFolder, discoverArchiveFile] = process.argv;
 if (!baseFolder) throw new Error("Required baseFolder missing");

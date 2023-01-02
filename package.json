@@ -1,6 +1,6 @@
 {
   "name": "da-archiver",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Archive any DeviantArt user/group galleries and favourites locally.",
   "homepage": "https://github.com/crazy4groovy/da-archiver#readme",
   "main": "./src/index.js",
@@ -25,13 +25,13 @@
   "dependencies": {
     "abort-controller": "~3.0.0",
     "commander": "~7.2.0",
-    "debug": "~4.3.2",
+    "debug": "~4.3.4",
     "folder-walker": "~3.2.0",
     "lodash.get": "~4.4.2",
-    "node-fetch": "^2.6.5",
+    "node-fetch": "~2.6.7",
     "please-upgrade-node": "~3.2.0",
     "recursive-readdir": "~2.2.2",
-    "supports-color": "~8.1.1",
+    "supports-color": "~9.3.1",
     "xml2json": "~0.12.0"
   }
 }

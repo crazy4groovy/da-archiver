@@ -2,6 +2,7 @@ const debug = require("debug")("fav:http");
 const fetch = require("node-fetch");
 
 const processor = require("./process-payload");
+const headers = require("../tools/headers");
 
 module.exports = (opts) => async (pr, folderId) => {
   await pr;
@@ -16,25 +17,37 @@ module.exports = (opts) => async (pr, folderId) => {
     }&offset=${json.nextOffset}&limit=24${
       folderId ? "&folderid=" + folderId : ""
     }`;
-    json = await fetch(url, { timeout: 6000 })
-      .then((r) => r.json())
+    json = await fetch(url, { headers, timeout: 6000 })
+      .then((r) => r.text())
+      .then((t) => {
+        const errs = t
+          .split("\n")
+          .filter((l) => l.toLowerCase().includes("cloudfront"));
+        if (errs.length) {
+          throw new Error(errs.join());
+        }
+        return JSON.parse(t);
+      })
       .catch((err) => {
-        console.error("FAV ERROR:" + err.message);
+        console.error("FAV ERROR:" + err.message, url);
         return {
           ...json,
+          nextOffset: undefined,
           results: [],
         };
       });
     debug(
       "Process page results:",
-      json.results.length,
+      json.results?.length,
       "hasMore:",
       json.hasMore
     );
     await processor(opts.author, json, opts.folder);
     opts.pages++;
     if (!json.nextOffset) {
-      json.nextOffset = nextOffset + 24;
+      // json.nextOffset = nextOffset + 24;
+      json.hasMore = false;
     }
+    await new Promise((res) => setTimeout(res, 1300 + Math.random() * 200));
   }
 };

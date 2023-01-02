@@ -5,7 +5,7 @@ const { relative } = require("path");
 const updateGallery = require("../gallery");
 const updateFavourites = require("../favourites");
 const updateGroup = require("../group");
-const throttler = require("../throttler")(2);
+const throttler = require("../throttler")(1);
 
 let [, , baseFolder, bestListFile] = process.argv;
 if (!baseFolder) throw new Error("Required baseFolder missing");
@@ -37,5 +37,6 @@ usernames.forEach((username, i) => {
   const handlers = isGroup[i]
     ? [updateGroup]
     : [updateGallery, updateFavourites];
+  // handlers.forEach((handler) => handler(username, baseFolder));
   handlers.forEach((handler) => throttler(handler, username, baseFolder));
 });
