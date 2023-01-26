@@ -12,7 +12,7 @@ Note: Recent DeviantArt network changes to DoS detection has necessitated a very
 
 ## Command example
 
->`da-archiver -b ~/da/archives/ -u myuser1 f!myuser1favsonly -g mygroup1`
+>`da-archiver -b ~/da/archives/ -u myuser1 f!myuser2withoutfavs -g mygroup1`
 
 ## Command args
 
@@ -21,15 +21,18 @@ Note: Recent DeviantArt network changes to DoS detection has necessitated a very
 - `-b`: basefolder [optional]
 - `-q`: quitEarly [optional]
 
-> Note: you must provide at least `-u` or `-g`; or both.
-> Note: `-q` quits archiving as soon as existing DeviantArt files are detected. (Recommended)
+> Notes:
+>
+> You must provide at least `-u` or `-g`; or both.
+>
+> `-q` quits archiving as soon as existing DeviantArt files are detected. (Recommended)
 
 ## Command arg modifiers
 
-- prefix with `g!<username>` to avoid archiving the `username`'s gallery.
-  - Eg. `g!hyung86` = "don't download their gallery"
-- prefix with `f!<username>` to avoid archiving the `username`'s favourites.
-  - Eg. `f!hyung86` = "don't download their favourites"
+- prefix with `g!<username>`: **avoid** archiving the `username`'s gallery.
+  - Eg. `g!hyung86` = "**don't** download hyung86 gallery"
+- prefix with `f!<username>`: **avoid** archiving the `username`'s favourites.
+  - Eg. `f!hyung86` = "**don't** download hyung86 favourites"
 
 ## Archive folder structure
 
@@ -60,7 +63,7 @@ Eg. [PowerShell env](https://www.npmjs.com/package/debug#powershell-vs-code-defa
 
 `$env:DEBUG='*';da-archiver ...`
 
-`$env:DEBUG='downloader';da-archiver ...`
+`$env:DEBUG='downloader,fav*';da-archiver ...`
 
 ## Tools (power-user bonus)
 
@@ -70,23 +73,26 @@ If you `git clone` this repo, there are a few helper tools for "bonus discovery"
 
 These scripts can be run like such, for example (in Powershell):
 
-## update-best-galleries (tools:ubg)
+### update-best-galleries (tools:ubg)
 
 >`npm run tools:ubg -- {root_folder} {best_users.md}`
+>
+>`node .\src\tools\update-best-galleries {root_folder} {best_users.md}`
 
 - Updates the galleries of your "best"/top users by tracking them in a formatted markdown *list*:
-`$env:DEBUG='downloader';node .\src\tools\update-best-galleries.js {root_folder} {best_users.md}`
 
-## discover-popular (tools:dp)
+### discover-popular (tools:dp)
 
 >`npm run tools:dp -- {root_folder} {discover_archive_file.txt}`
+>
+>`node .\src\tools\discover-popular {root_folder} {discover_archive_file.txt}`
 
 - Scrapes your existing users' favourites, to see which ones are "popular" on DeviantArt, and store user list in a file:
-`$env:DEBUG='downloader';node .\src\tools\discover-popular.js {root_folder} {discover_archive_file.txt}`
 
-## sample-art (tools:sa)
+### sample-art (tools:sa)
 
 >`npm run tools:sa -- {root_folder} {discover_archive_file.txt}`
+>
+>`node .\src\tools\sample-art {root_folder} {discover_archive_file.txt}`
 
 - Downloads one sample image from each users' gallery which is listed in this text file (i.e. to get a feel for their art style):
-`$env:DEBUG='downloader';node .\src\tools\sample-art.js {root_folder} {discover_archive_file.txt}`
