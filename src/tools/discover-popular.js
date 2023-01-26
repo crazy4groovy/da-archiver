@@ -16,11 +16,11 @@ const throttler = require("../throttler")(1);
 const isDirectory = (folder) =>
   existsSync(folder) && lstatSync(folder).isDirectory();
 
-let [, , baseFolder, discoverArchiveFile] = process.argv;
-if (!baseFolder) throw new Error("Required baseFolder missing");
-baseFolder = relative(".", baseFolder);
+let [, , basefolder, discoverArchiveFile] = process.argv;
+if (!basefolder) throw new Error("Required baseFolder missing");
+basefolder = relative(".", basefolder);
 const discoverFile = join(
-  baseFolder,
+  basefolder,
   `_discover-authors-${new Date().toJSON().split("T")[0]}.txt`
 );
 const appendOpts = {
@@ -55,12 +55,12 @@ async function fetchStats(author) {
 (async () => {
   console.log("!START!");
 
-  let foundUsernames = readdirSync(baseFolder)
-    .map((name) => join(baseFolder, name))
+  let foundUsernames = readdirSync(basefolder)
+    .map((name) => join(basefolder, name))
     .filter(isDirectory)
     .map((full) => parse(full).base.replace(/_/g, "-").toLowerCase())
     .sort();
-  console.log("Existing:", baseFolder, "\n", foundUsernames.join("\n"));
+  console.log("Existing:", basefolder, "\n", foundUsernames.join("\n"));
   // convert list to map, for efficient lookups
   foundUsernames = foundUsernames.reduce((map, un) => {
     map[un] = true;
@@ -136,7 +136,7 @@ async function fetchStats(author) {
   }
 
   const doneWalkBaseFolder = new Promise((done) => {
-    const stream = walker([baseFolder]);
+    const stream = walker([basefolder]);
     stream.on("data", processor);
     stream.on("end", done);
   });

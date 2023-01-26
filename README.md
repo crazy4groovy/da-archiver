@@ -4,6 +4,8 @@ Archive any DeviantArt user/group galleries and favourites locally.
 
 (Sane download timeouts are set to 6 seconds.)
 
+Note: Recent DeviantArt network changes to DoS detection has necessitated a very low frequency of API calls.
+
 ## Install
 
 >`npm i -g da-archiver`
@@ -17,8 +19,10 @@ Archive any DeviantArt user/group galleries and favourites locally.
 - `-u`: usernames (space separated) [optional]
 - `-g`: groups (space separated) [optional]
 - `-b`: basefolder [optional]
+- `-q`: quitEarly [optional]
 
 > Note: you must provide at least `-u` or `-g`; or both.
+> Note: `-q` quits archiving as soon as existing DeviantArt files are detected. (Recommended)
 
 ## Command arg modifiers
 
@@ -55,6 +59,7 @@ This package uses [debug](https://www.npmjs.com/package/debug).
 Eg. [PowerShell env](https://www.npmjs.com/package/debug#powershell-vs-code-default):
 
 `$env:DEBUG='*';da-archiver ...`
+
 `$env:DEBUG='downloader';da-archiver ...`
 
 ## Tools (power-user bonus)
@@ -65,15 +70,21 @@ If you `git clone` this repo, there are a few helper tools for "bonus discovery"
 
 These scripts can be run like such, for example (in Powershell):
 
+## update-best-galleries (tools:ubg)
+
 >`npm run tools:ubg -- {root_folder} {best_users.md}`
 
 - Updates the galleries of your "best"/top users by tracking them in a formatted markdown *list*:
 `$env:DEBUG='downloader';node .\src\tools\update-best-galleries.js {root_folder} {best_users.md}`
 
+## discover-popular (tools:dp)
+
 >`npm run tools:dp -- {root_folder} {discover_archive_file.txt}`
 
 - Scrapes your existing users' favourites, to see which ones are "popular" on DeviantArt, and store user list in a file:
 `$env:DEBUG='downloader';node .\src\tools\discover-popular.js {root_folder} {discover_archive_file.txt}`
+
+## sample-art (tools:sa)
 
 >`npm run tools:sa -- {root_folder} {discover_archive_file.txt}`
 

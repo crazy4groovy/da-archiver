@@ -20,11 +20,9 @@ function _findBestTypeUrl(types, prettyName) {
   return typeUrl;
 }
 
-module.exports = async (author, json, folder = ".") => {
-  if (!Array.isArray(json)) json = [json];
-
+module.exports = async (username, { json, basefolder = ".", quitEarly }) => {
   const dynSrc = (i) => {
-    if (!author) {
+    if (!username) {
       return `${i.deviation.author.username}`;
     }
     if (!_get(i, "deviation.media.token", false)) {
@@ -42,6 +40,7 @@ module.exports = async (author, json, folder = ".") => {
     return f;
   };
 
+  if (!Array.isArray(json)) json = [json];
   const s = new Set();
   json.forEach((d) =>
     d.results.forEach((i) => {
@@ -56,12 +55,12 @@ module.exports = async (author, json, folder = ".") => {
   //   return console.log(payload.join(","));
   // }
 
-  fs.existsSync(folder) || fs.mkdirSync(folder);
-  folder = path.join(folder, author);
-  fs.existsSync(folder) || fs.mkdirSync(folder);
-  folder = path.join(folder, "_favourites");
-  fs.existsSync(folder) || fs.mkdirSync(folder);
+  fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
+  basefolder = path.join(basefolder, username);
+  fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
+  basefolder = path.join(basefolder, "_favourites");
+  fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
 
-  const downloader = dlReducer(author, folder, payload.length);
-  return payload.map((imgUrl) => ({ imgUrl })).reduce(downloader, null);
+  const downloader = dlReducer(username, basefolder, payload.length, quitEarly);
+  return payload.map((imgUrl) => ({ imgUrl })).reduce(downloader, Promise.resolve());
 };

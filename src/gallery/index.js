@@ -17,12 +17,12 @@ function parseRssXml(xml) {
     alternateTextNode: false,
   });
 
-  let next = [] // coerse single into array
+  let next = [] // coerce single into array
     .concat(_get(json, "rss.channel.atom:link", []))
     .find((l) => l.rel === "next");
   next = next && next.href;
 
-  const imgs = [] // coerse single into array
+  const imgs = [] // coerce single into array
     .concat(_get(json, "rss.channel.item", []))
     .filter(({ "media:content": mc }) => mc && mc.medium === "image")
     .reduce((imgs, { link, "media:content": mc }) => {
@@ -36,37 +36,43 @@ function parseRssXml(xml) {
   return { next, imgs };
 }
 
-module.exports = async function main(username, folder = ".") {
-  let allImgs = [],
-    next = `https://backend.deviantart.com/rss.xml?offset=0&q=gallery:${username}`;
-  while (next) {
-    const xml = await fetch(next, { timeout: 6000 })
+module.exports = async function main(username, { basefolder = ".", quitEarly }) {
+  fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
+  username.split("/").forEach((usernameChunk) => {
+    basefolder = path.join(basefolder, usernameChunk);
+    fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
+  });
+
+  let imgs;
+  let allImgs = [];
+  let url = `https://backend.deviantart.com/rss.xml?offset=0&q=gallery:${username}`;
+
+  while (url) {
+    const xml = await fetch(url, { timeout: 6000 })
       .then((r) => r.text())
       .catch(() => null);
     if (xml === null) {
-      debug("XML FETCH ERROR - try again:", next);
+      debug("XML FETCH ERROR - try again:", url);
       continue;
     }
 
-    let imgs;
-    ({ next, imgs } = parseRssXml(xml));
-    debug("next:", next);
+    ({ next: url, imgs } = parseRssXml(xml));
+    debug("next:", url);
     debug("Collected images:", imgs.length);
 
+    const downloader = dlReducer(username, basefolder, imgs.length, quitEarly);
+    try {
+      await imgs.reduce(downloader, Promise.resolve());
+    } catch (err) {
+      debug(username, err.message)
+      break;
+    }
+
     allImgs = allImgs.concat(imgs);
+    debug("Tally images:", allImgs.length);
   }
 
   debug("Total collected images:", allImgs.length, username);
-  if (allImgs.length === 0) return;
-
-  fs.existsSync(folder) || fs.mkdirSync(folder);
-  username.split("/").forEach((usernameChunk) => {
-    folder = path.join(folder, usernameChunk);
-    fs.existsSync(folder) || fs.mkdirSync(folder);
-  });
-
-  const downloader = dlReducer(username, folder, allImgs.length);
-  return allImgs.reduce(downloader, null);
 };
 
 module.exports.parseRssXml = parseRssXml;

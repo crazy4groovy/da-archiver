@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 require("please-upgrade-node")(require("../package.json"));
-require("supports-color");
 
 const debug = require("debug")("main");
 
@@ -9,8 +8,7 @@ const gallery = require("./gallery");
 const favs = require("./favourites");
 const group = require("./group");
 
-const { usernames = [], groups = [], basefolder } = argv;
-
+const { usernames = [], groups = [], basefolder, quitEarly } = argv;
 debug("Start!", usernames, basefolder || "", process.argv);
 
 (async () => {
@@ -24,17 +22,17 @@ debug("Start!", usernames, basefolder || "", process.argv);
 
     if (avoidAction !== "g") {
       console.log(">>", user, "GALLERY");
-      await gallery(user, basefolder);
+      await gallery(user, { basefolder, quitEarly });
     }
     if (avoidAction !== "f") {
       console.log(">>", user, "FAVS");
-      await favs(user.split("/")[0], basefolder);
+      await favs(user.split("/")[0], { basefolder, quitEarly });
     }
   }, null);
 
   await groups.reduce(async (pr, groupname) => {
     await pr;
-    await group(groupname, basefolder);
+    await group(groupname, { basefolder, quitEarly });
   }, null);
 
   debug("Done!", usernames);

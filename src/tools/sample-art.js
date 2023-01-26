@@ -6,12 +6,12 @@ const fetch = require("node-fetch");
 const { parseRssXml } = require("../gallery");
 const throttler = require("../throttler")(1);
 
-let [, , baseFolder, discoverArchiveFile] = process.argv;
-if (!baseFolder) throw new Error("Required baseFolder missing");
+let [, , basefolder, discoverArchiveFile] = process.argv;
+if (!basefolder) throw new Error("Required baseFolder missing");
 if (!discoverArchiveFile) throw new Error("Required archive file missing");
 console.log("START!");
 
-baseFolder = relative(".", baseFolder);
+basefolder = relative(".", basefolder);
 
 const usernames = readFileSync(discoverArchiveFile, "utf8")
   .replace(/\r/g, "")
@@ -24,7 +24,7 @@ const usernames = readFileSync(discoverArchiveFile, "utf8")
 console.log(usernames.sort().join("\n"), "\n", usernames.length);
 
 const handleUsername =  async (username, imgIdx) => {
-  const destFilename = join(baseFolder, username + "_" + imgIdx + ".jpg");
+  const destFilename = join(basefolder, username + "_" + imgIdx + ".jpg");
   // console.log(baseFolder, username, destFilename, imgs[0].imgUrl);
   if (existsSync(destFilename)) {
     console.log("IMAGE EXISTS:", username);

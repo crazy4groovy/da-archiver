@@ -3,7 +3,7 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 const newThrottler = ({ isBusy, doLock, doUnlock, waitMs }) =>
   async function throttler(cb, ...args) {
     while (isBusy()) {
-      await delay((waitMs && waitMs()) || 100); // use event-loop as a callback queue!
+      await delay(waitMs ? waitMs() : 500); // use event-loop as our callback queue!
     }
     doLock();
     const result = await cb.call(this, ...args);

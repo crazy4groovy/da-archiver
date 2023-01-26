@@ -8,9 +8,13 @@ const createAbort = require("./abort");
 const regexFn = /\/([\w\d_.-]+\.\w+)/g;
 
 // Note: serially process async via .reduce()
-module.exports.reducer = (author, folder, len) =>
-  async function dl(pr, { imgUrl }, i) {
-    await pr;
+module.exports.reducer = (author, folder, len, quitEarly) =>
+async function dl(pr, { imgUrl }, i) {
+    pr = await pr;
+    if (pr === null && quitEarly) {
+      throw new Error("quitEarly");
+    }
+
     const filename = (imgUrl.match(regexFn) || []).pop(); // take last match
     if (!filename) {
       debug("DL ERROR: filename not found within " + imgUrl);

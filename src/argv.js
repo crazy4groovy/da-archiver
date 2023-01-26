@@ -11,5 +11,6 @@ module.exports = program
   )
   .option("-g, --groups <group1><space...>", "group names")
   .option("-b, --basefolder <path>", "base folder for image downloads")
+  .option("-q, --quitEarly", "short-circuit archiving process if any local file/art is found")
   .parse(process.argv)
   .opts();

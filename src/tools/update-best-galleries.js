@@ -7,13 +7,13 @@ const updateFavourites = require("../favourites");
 const updateGroup = require("../group");
 const throttler = require("../throttler")(1);
 
-let [, , baseFolder, bestListFile] = process.argv;
-if (!baseFolder) throw new Error("Required baseFolder missing");
+let [, , basefolder, bestListFile] = process.argv;
+if (!basefolder) throw new Error("Required baseFolder missing");
 if (!bestListFile) throw new Error("Required BEST.md file missing");
 console.log("START!");
 
-baseFolder = relative(".", baseFolder);
-if (!existsSync(baseFolder)) {
+basefolder = relative(".", basefolder);
+if (!existsSync(basefolder)) {
   throw new Error("ERROR - Base folder missing: " + username);
 }
 
@@ -38,5 +38,5 @@ usernames.forEach((username, i) => {
     ? [updateGroup]
     : [updateGallery, updateFavourites];
   // handlers.forEach((handler) => handler(username, baseFolder));
-  handlers.forEach((handler) => throttler(handler, username, baseFolder));
+  handlers.forEach((handler) => throttler(handler, username, { basefolder, quitEarly: true }));
 });
