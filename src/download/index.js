@@ -4,42 +4,58 @@ const path = require("path");
 const fetch = require("node-fetch");
 
 const createAbort = require("./abort");
+const { headers } = require("../tools/headers");
 
 const regexFn = /\/([\w\d_.-]+\.\w+)/g;
 
 // Note: serially process async via .reduce()
-module.exports.reducer = (author, folder, len, quitEarly) =>
-async function dl(pr, { imgUrl }, i) {
-    pr = await pr;
-    if (pr === null && quitEarly) {
-      throw new Error("quitEarly");
-    }
+module.exports.createReducer = (author, folder, len, quitEarly) =>
+  async function dl(payloadPr, { imgUrl }, i) {
+      let { prevPromise, count } = await payloadPr;
 
-    const filename = (imgUrl.match(regexFn) || []).pop(); // take last match
-    if (!filename) {
-      debug("DL ERROR: filename not found within " + imgUrl);
-      return null;
-    }
+      prevPromise = await prevPromise;
+      if (prevPromise == null && quitEarly) {
+        debug("DL ERROR: QUIT EARLY");
+        return { prevPromise: null, count };
+      }
 
-    const destFilename = path.join(folder, filename);
-    if (fs.existsSync(destFilename)) return null;
+      const filename = (imgUrl.match(regexFn) || []).pop(); // take last match
+      if (!filename) {
+        debug("DL SKIP: filename not found within " + imgUrl);
+        return { prevPromise: true, count };
+      }
 
-    const percent = ((i / len) * 100).toFixed(1) + "%";
-    debug(new Date().toLocaleTimeString(), percent, author, destFilename);
+      const destFilename = path.join(folder, filename);
+      if (fs.existsSync(destFilename)) {
+        // debug("DL SKIP: file already exists " + destFilename);
+        return { prevPromise: true, count };
+      }
 
-    const { clear, signal } = createAbort();
-    return fetch(imgUrl, { signal })
+      const percent = ((i / len) * 100).toFixed(1) + "%";
+      debug(new Date().toLocaleTimeString(), percent, author, destFilename);
+      count += 1;
+
+      const payload = { prevPromise: downloadImage(imgUrl, destFilename), count };
+      return payload;
+    };
+
+async function downloadImage(imgUrl, destFilename) {
+  return new Promise((resolve) => {
+    const { clear, signal } = createAbort(15000);
+    fetch(imgUrl, { headers, signal })
       .then((res) => {
-        const destWriteStream = fs.createWriteStream(destFilename);
-        res.body.pipe(destWriteStream);
+        const destStream = fs.createWriteStream(destFilename);
+        destStream.on('finish', () => resolve(true));
+        destStream.on('error', () => resolve(null));
+        res.body.pipe(destStream);
       })
       .catch((err) => {
         // if (err.name === "AbortError") {
         //   console.error("DL was aborted, try again: " + err.message);
-        //   return dl(pr, { imgUrl }, i)
         // }
-        console.error("DL ERROR: " + err.message + " : " + imgUrl);
-        return null;
+        console.error("DL ERROR: " + err.name || err.message + " : " + imgUrl);
+        resolve(null);
       })
       .finally(clear);
-  };
+  });
+}

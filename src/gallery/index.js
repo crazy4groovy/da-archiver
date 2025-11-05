@@ -2,39 +2,13 @@ const debug = require("debug")("gallery");
 const fs = require("fs");
 const path = require("path");
 const fetch = require("node-fetch");
-const parser = require("xml2json");
-const _get = require("lodash.get");
 
-const { reducer: dlReducer } = require("../download");
+const { headers, cookie } = require('../tools/headers')
 
-// Uses DeviantArt RSS feed to download all gallery images via offset param
+const { createReducer } = require("../download");
+const { parseRssXml } = require("./parseRssXml");
 
-function parseRssXml(xml) {
-  const json = parser.toJson(xml, {
-    object: true,
-    coerce: true,
-    arrayNotation: false,
-    alternateTextNode: false,
-  });
-
-  let next = [] // coerce single into array
-    .concat(_get(json, "rss.channel.atom:link", []))
-    .find((l) => l.rel === "next");
-  next = next && next.href;
-
-  const imgs = [] // coerce single into array
-    .concat(_get(json, "rss.channel.item", []))
-    .filter(({ "media:content": mc }) => mc && mc.medium === "image")
-    .reduce((imgs, { link, "media:content": mc }) => {
-      imgs.push({
-        link: link, // not used
-        imgUrl: mc.url,
-      });
-      return imgs;
-    }, []);
-
-  return { next, imgs };
-}
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 module.exports = async function main(username, { basefolder = ".", quitEarly }) {
   fs.existsSync(basefolder) || fs.mkdirSync(basefolder);
@@ -45,32 +19,42 @@ module.exports = async function main(username, { basefolder = ".", quitEarly }) 
 
   let imgs;
   let allImgs = [];
+  // Uses DeviantArt RSS feed to download all gallery images via offset param contained in next
   let url = `https://backend.deviantart.com/rss.xml?offset=0&q=gallery:${username}`;
+  debug(`Start Gallery: ${username} URL: ${url}`);
 
-  while (url) {
-    const xml = await fetch(url, { timeout: 6000 })
+  do {
+    // await delay(2000 + 2000 * Math.random());
+    await delay(20_000 + 10_000 * Math.random());
+
+    const xml = await fetch(url, { timeout: 6000, headers: { ...headers, cookie } })
       .then((r) => r.text())
-      .catch(() => null);
-    if (xml === null) {
+      .catch(async (err) => null);
+    if (xml === null || xml.includes("CloudFront")) {
       debug("XML FETCH ERROR - try again:", url);
       continue;
     }
 
-    ({ next: url, imgs } = parseRssXml(xml));
-    debug("next:", url);
-    debug("Collected images:", imgs.length);
+    ({ imgs, next: url } = parseRssXml(xml));
+    debug("Collected gallery images:", imgs.length, username);
 
-    const downloader = dlReducer(username, basefolder, imgs.length, quitEarly);
-    try {
-      await imgs.reduce(downloader, Promise.resolve());
-    } catch (err) {
-      debug(username, err.message)
+    if (imgs.length === 0) {
+      await delay(5000);
       break;
     }
 
+    const downloadReducer = createReducer(username, basefolder, imgs.length, quitEarly);
+
+    const { prevPromise, count } = await imgs.reduce(downloadReducer, { prevPromise: true, count: 0 });
+    await prevPromise;
+
     allImgs = allImgs.concat(imgs);
-    debug("Tally images:", allImgs.length);
-  }
+    debug("Tally images:", allImgs.length, count);
+
+    if (count === 0 && quitEarly) break;
+
+    debug("next URL:", url);
+  } while (url);
 
   debug("Total collected images:", allImgs.length, username);
 };

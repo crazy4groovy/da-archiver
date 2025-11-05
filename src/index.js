@@ -7,26 +7,23 @@ const argv = require('./argv');
 const gallery = require("./gallery");
 const favs = require("./favourites");
 const group = require("./group");
+const { checkAvoidAction } = require("./utils/check-avoid-action");
 
 const { usernames = [], groups = [], basefolder, quitEarly } = argv;
 debug("Start!", usernames, basefolder || "", process.argv);
 
 (async () => {
-  await usernames.reduce(async (pr, user) => {
+  await usernames.reduce(async (pr, usernamefull) => {
     await pr;
-
-    // isolate the optional avoid prefixes: f!, g!
-    const parts = user.split("!");
-    user = parts.pop(); // take last
-    const avoidAction = parts.length ? parts.pop().toLowerCase() : null;
-
+    // isolate the optional "avoid" prefixes: f!, g!
+    const { username, avoidAction } = await checkAvoidAction(usernamefull);
     if (avoidAction !== "g") {
-      console.log(">>", user, "GALLERY");
-      await gallery(user, { basefolder, quitEarly });
+      console.log(">>", username, "GALLERY");
+      await gallery(username, { basefolder, quitEarly });
     }
     if (avoidAction !== "f") {
-      console.log(">>", user, "FAVS");
-      await favs(user.split("/")[0], { basefolder, quitEarly });
+      console.log(">>", username, "FAVS");
+      await favs(username.split("/")[0], { basefolder, quitEarly });
     }
   }, null);
 

@@ -70,10 +70,10 @@ async function fetchStats(author) {
   writeFileSync(discoverFile, "", "utf8");
 
   const regexLine = /^\t?([\w-]+)\s?(.*)$/;
-  const handleLine = (l) => {
+  const handleLine = (line) => {
     try {
-      if (l.length <= 2) return;
-      let [, name, data] = l.match(regexLine) || [];
+      if (line.length <= 2) return;
+      let [, name, data] = line.match(regexLine) || [];
       if (!name) return;
       name = name.toLowerCase();
 

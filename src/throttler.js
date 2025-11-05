@@ -7,20 +7,19 @@ const newThrottler = ({ isBusy, doLock, doUnlock, waitMs }) =>
     }
     doLock();
     const result = await cb.call(this, ...args);
+    await delay(1000); // slows down every download response
     doUnlock();
     return result;
   };
 
-const _lock = { count: 0, max: 1 };
-
-const throttler = newThrottler({
-  isBusy: () => _lock.count >= _lock.max,
-  doLock: () => (_lock.count += 1),
-  doUnlock: () => (_lock.count -= 1),
-  waitMs: () => 1000 * Math.random(),
-});
-
 module.exports = (max) => {
+  const _lock = { count: 0, max: 1 };
   if (max !== undefined && !Number.isNaN(max)) _lock.max = max;
-  return throttler;
+
+  return newThrottler({
+    isBusy: () => _lock.count >= _lock.max,
+    doLock: () => (_lock.count += 1),
+    doUnlock: () => (_lock.count -= 1),
+    waitMs: () => 1000 * Math.random(),
+  });
 }
