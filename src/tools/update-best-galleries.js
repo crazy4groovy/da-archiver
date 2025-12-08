@@ -15,7 +15,7 @@ console.log("START!");
 
 basefolder = relative(".", basefolder);
 if (!existsSync(basefolder)) {
-  throw new Error("ERROR - Base folder missing: " + username);
+  throw new Error("ERROR - Base folder missing: " + basefolder);
 }
 
 let usernames = readFileSync(bestListFile, "utf8")
@@ -30,8 +30,8 @@ usernames = usernames.map((un) => un.replace(" (group)", ""));
 
 const quitEarly = true; // usernames.length > 20;
 
-usernames.forEach((usernamefull, i) => {
-  const { username, avoidAction } = checkAvoidAction(usernamefull);
+usernames.forEach((username, i) => {
+  const { username, avoidAction } = checkAvoidAction(username);
   console.log(
     "THROTTLE FOR:",
     username,
@@ -41,8 +41,8 @@ usernames.forEach((usernamefull, i) => {
   const handlers = isGroup[i]
     ? [updateGroup]
     : !avoidAction
-    ? [updateGallery]//, updateFavourites]
-    : avoidAction !== "g" ? [updateGallery] : [updateFavourites];
+      ? [updateGallery]//, updateFavourites]
+      : avoidAction !== "g" ? [updateGallery] : [updateFavourites];
 
   handlers.forEach((handler) => throttler(handler, username, { basefolder, quitEarly }));
 });
