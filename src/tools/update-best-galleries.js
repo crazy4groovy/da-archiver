@@ -30,8 +30,8 @@ usernames = usernames.map((un) => un.replace(" (group)", ""));
 
 const quitEarly = true; // usernames.length > 20;
 
-usernames.forEach((username, i) => {
-  const { username, avoidAction } = checkAvoidAction(username);
+usernames.forEach((usernameFull, i) => {
+  const { username, avoidAction } = checkAvoidAction(usernameFull);
   console.log(
     "THROTTLE FOR:",
     username,
