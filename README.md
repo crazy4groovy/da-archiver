@@ -1,3 +1,5 @@
+
+
 # DeviantArt Archiver
 
 Archive any DeviantArt user/group galleries and favourites locally.
@@ -7,6 +9,8 @@ Archive any DeviantArt user/group galleries and favourites locally.
 Note: Recent DeviantArt network changes to DoS detection has necessitated a very low frequency of API calls.
 
 ## Install
+
+Requires Node.js `>=14.x`.
 
 >`npm i -g da-archiver`
 
